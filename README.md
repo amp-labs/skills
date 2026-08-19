@@ -3,6 +3,13 @@
   <a href="https://www.withampersand.com/">
     <img src="https://res.cloudinary.com/dycvts6vp/image/upload/v1723671980/ampersand-logo-black.svg" height="30" alt="Ampersand logo">
   </a>
+  <br />
+  <a href="https://github.com/amp-labs/skills/releases">
+    <img src="https://img.shields.io/github/v/release/amp-labs/skills?filter=amp-cli-v%2A&amp;label=amp-cli" alt="Latest amp-cli release">
+  </a>
+  <a href="https://github.com/amp-labs/skills/actions/workflows/check.yml">
+    <img src="https://github.com/amp-labs/skills/actions/workflows/check.yml/badge.svg" alt="Validation status">
+  </a>
 </div>
 
 # Ampersand Agent Skills
