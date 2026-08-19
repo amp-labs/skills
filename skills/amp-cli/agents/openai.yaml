@@ -1,0 +1,4 @@
+interface:
+  display_name: "Amp CLI"
+  short_description: "Use Ampersand through its CLI"
+  default_prompt: "Use $amp-cli to onboard, test, or maintain this Ampersand integration with the installed amp CLI."
