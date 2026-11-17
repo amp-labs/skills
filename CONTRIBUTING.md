@@ -10,7 +10,8 @@ Thanks for helping improve Ampersand Agent Skills.
 - Depend only on public commands shown by the installed CLI.
 - Keep claims exact. Deployment, installation health, operations, and delivery prove different
   things.
-- Keep the skill on the CLI boundary. Do not add API, provider, browser, or credential workflows.
+- Keep `amp-cli` on the CLI boundary. Do not add API, provider, browser, or credential workflows
+  to it.
 
 ## Checks
 
