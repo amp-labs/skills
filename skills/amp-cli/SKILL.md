@@ -1,6 +1,6 @@
 ---
 name: amp-cli
-description: Run the installed public Ampersand amp CLI to onboard, test, inspect, or maintain integrations. Use only to operate integrations through existing amp commands for projects, destinations, manifests, provider apps, connections, installations, operations, local webhooks, or tunnels. Do not use for work on the amp CLI product itself, including its code, commands, tests, bugs, or documentation. Do not use for provider websites, credentials, raw APIs, or embedded UI.
+description: Run the installed public Ampersand amp CLI to test, inspect, or maintain integrations. Use only to operate integrations through existing amp commands for projects, destinations, manifests, provider apps, connections, installations, operations, local webhooks, or tunnels. Do not use for work on the amp CLI product itself, including its code, commands, tests, bugs, or documentation. Do not use for provider websites, credentials, raw APIs, or embedded UI.
 ---
 
 # Amp CLI

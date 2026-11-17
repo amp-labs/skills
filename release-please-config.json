@@ -6,6 +6,12 @@
       "component": "amp-cli",
       "initial-version": "0.0.1",
       "skip-changelog": true
+    },
+    "skills/amp-new-integration": {
+      "release-type": "simple",
+      "component": "amp-new-integration",
+      "initial-version": "0.0.1",
+      "skip-changelog": true
     }
   }
 }

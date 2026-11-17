@@ -1,0 +1,4 @@
+interface:
+  display_name: "Amp: New integration"
+  short_description: "Set up a new Ampersand integration end to end"
+  default_prompt: "Use $amp-new-integration to connect a provider to this app with Ampersand."
