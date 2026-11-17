@@ -19,14 +19,16 @@ Official [Agent Skills](https://agentskills.io/specification) for using Ampersan
 ## Skills
 
 - [`amp-cli`](skills/amp-cli): Use the official [`amp` CLI](https://github.com/amp-labs/cli) to
-  onboard, test, and maintain Ampersand integrations.
+  test and maintain Ampersand integrations.
+- [`amp-new-integration`](skills/amp-new-integration): Set up a new Ampersand integration end to
+  end, from connecting a provider to data arriving.
 
 ## Install
 
 Install with [`npx skills`](https://github.com/vercel-labs/skills):
 
 ```sh
-npx skills add amp-labs/skills --skill amp-cli
+npx skills add amp-labs/skills -g
 ```
 
 Or copy the skill manually. For Codex:
@@ -38,7 +40,8 @@ cp -r skills/amp-cli ~/.agents/skills/
 Then ask:
 
 ```text
-Use $amp-cli to help me onboard this Ampersand integration.
+Use $amp-new-integration to connect HubSpot to this app.
+Use $amp-cli to help me test this Ampersand integration.
 ```
 
 ## Develop
