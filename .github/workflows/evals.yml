@@ -12,9 +12,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: evals
-
 jobs:
   evals:
     if: >-
@@ -23,6 +20,8 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 240
+    concurrency:
+      group: evals
     environment: evals
     permissions:
       contents: read
