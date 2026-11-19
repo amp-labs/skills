@@ -1,0 +1,2 @@
+cd evals
+node_modules/.bin/vp staged
