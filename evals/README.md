@@ -54,12 +54,14 @@ directory that holds `linux_arm64/amp` and `linux_amd64/amp`.
 
 1. Create `evals/<scenario>/` with `PROMPT.md`, `EVAL.ts`, `package.json`, and the files the agent starts with.
 2. Use `{{project}}` in the prompt and `{{run}}` in the name of any integration the agent deploys.
-3. If the scenario changes the project, add a check for it to `afterRun` in `lib/arm.ts`.
+3. If the scenario changes the project, add a check for it to `projectChecksByScenario` in `lib/arm.ts`.
 4. Add the scenario to the table above.
 
 Arms are in `experiments/`, and the models they run on are in `lib/models.ts`.
 
 ## Checks
 
-`vp check` formats, lints, and type-checks this folder. `npm install` adds a pre-commit hook that runs it on
-staged files, and CI runs it on every pull request.
+`npm run check` formats, lints, and type-checks this folder. Lint rules forbid comments (`lint-plugin.ts`), `any`,
+type assertions, non-null assertions, unsafe use of `any` values, unhandled or misused promises, non-exhaustive `switch`
+statements, and `console`, and the script fails on `oxlint-disable` or `eslint-disable` comments. `npm install`
+adds a pre-commit hook that runs it, and CI runs it on every pull request.

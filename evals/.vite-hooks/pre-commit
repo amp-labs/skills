@@ -1,2 +1,3 @@
 cd evals
 node_modules/.bin/vp staged
+npm run --silent check

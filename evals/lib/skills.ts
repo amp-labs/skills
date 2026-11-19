@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 
 const skillsRoot = fileURLToPath(new URL("../../skills/", import.meta.url));
 
-// Files that install the named skills as project skills in the sandbox workspace, under `targetDir`.
 export function skillFiles(names: string[], targetDir: string): Record<string, string> {
   const files: Record<string, string> = {};
   for (const name of names) {
