@@ -1,6 +1,6 @@
 import type { EvalFixture, EvalRunData, ExperimentConfig } from "@vercel/agent-eval";
 import { installAmp } from "./amp.ts";
-import { type Agent, modelsByAgent, projectSkillsDirByAgent } from "./models.ts";
+import { type Agent, type Effort, modelsByAgent, projectSkillsDirByAgent } from "./models.ts";
 import {
   evalProject,
   expectDeployedThenDelete,
@@ -29,12 +29,16 @@ walk(".");'`;
 
 const foldSetupIntoBaselineCommit = "git add -A\ngit commit -q --amend --no-edit";
 
-export function arm(agent: Agent, skills: string[]): ExperimentConfig {
+export function arm(agent: Agent, skills: string[], effort: Effort): ExperimentConfig {
   return {
     agent,
-    model: modelsByAgent[agent],
+    model:
+      agent === "codex"
+        ? modelsByAgent.codex.map((model) => `${model}?reasoningEffort=${effort}`)
+        : modelsByAgent[agent],
+    agentOptions: agent === "claude-code" ? { effort } : undefined,
     sandbox: "docker",
-    runs: 1,
+    runs: 3,
     earlyExit: false,
     copyFiles: "changed",
     timeout: 600,

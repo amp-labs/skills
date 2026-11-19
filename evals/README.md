@@ -1,8 +1,8 @@
 # Skill evals
 
-These evals measure whether a skill makes coding agents better at real Ampersand tasks. Each scenario runs once
-per _arm_ (an agent with a set of skills, or none) and per model, and its result is checked against a real
-Ampersand project. Runs use [`@vercel/agent-eval`](https://github.com/vercel-labs/agent-eval), with a fresh Docker
+These evals measure whether a skill makes coding agents better at real Ampersand tasks. Each scenario runs three times
+per model and per _arm_ (an agent with a set of skills, or none, at low or medium reasoning effort), and each
+result is checked against a real Ampersand project. Runs use [`@vercel/agent-eval`](https://github.com/vercel-labs/agent-eval), with a fresh Docker
 container for each run.
 
 ## Requirements
@@ -21,9 +21,11 @@ npm install
 export CLAUDE_CODE_OAUTH_TOKEN=...
 export AMP_API_KEY=...            # API key for the eval project
 export AMP_EVAL_PROJECT=...       # name or ID of the eval project
-npm run eval -- '*'               # every arm
-npm run eval -- claude-amp-cli    # one arm
+npm run eval -- '*'                   # every arm
+npm run eval -- claude-amp-cli-low    # one arm
 ```
+
+agent-eval runs the arms you name at the same time, so on a small machine run them one by one.
 
 Results go to `results/<arm>/<model>/<timestamp>/<scenario>/`. To browse them, run `npx agent-eval playground`.
 
