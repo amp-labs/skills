@@ -9,6 +9,9 @@ on:
       effort:
         type: string
         default: medium
+      report:
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -168,7 +171,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
-        run: gh pr comment "$PR" --edit-last --create-if-none --body-file summary.md
+          REPORT: ${{ inputs.report }}
+          MARKER: <!-- eval-report:${{ inputs.report }} -->
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.event.pull_request.head.sha }}
+        run: |
+          {
+            echo "$MARKER"
+            cat summary.md
+            printf '\n[%s run](%s) on %s\n' "$REPORT" "$RUN" "$COMMIT"
+          } > comment.md
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | tail -1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@comment.md
+          else
+            gh pr comment "$PR" --body-file comment.md
+          fi
 
       - name: Fail if an arm produced no results
         run: test -z "$MISSING_RESULTS"

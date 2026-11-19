@@ -34,3 +34,4 @@ jobs:
     with:
       arms: ${{ inputs.arms || 'all' }}
       effort: ${{ inputs.effort || 'medium' }}
+      report: evals
