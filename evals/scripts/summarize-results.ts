@@ -1,7 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-type Row = { arm: string; model: string; scenario: string; passed: number; total: number };
+type Row = { arm: string; modelDir: string; scenario: string; result: string };
+
+const evalsDir = fileURLToPath(new URL("../", import.meta.url));
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -14,7 +17,7 @@ const directories = (path: string): string[] =>
         .sort()
     : [];
 
-function runCounts(summaryPath: string): { passed: number; total: number } | null {
+function runCounts(summaryPath: string): string | null {
   const summary: unknown = JSON.parse(readFileSync(summaryPath, "utf-8"));
   if (
     !isRecord(summary) ||
@@ -22,7 +25,7 @@ function runCounts(summaryPath: string): { passed: number; total: number } | nul
     typeof summary.totalRuns !== "number"
   )
     return null;
-  return { passed: summary.passedRuns, total: summary.totalRuns };
+  return `${summary.passedRuns}/${summary.totalRuns}`;
 }
 
 function latestRows(resultsDir: string, arm: string): Row[] {
@@ -30,26 +33,52 @@ function latestRows(resultsDir: string, arm: string): Row[] {
     const latest = directories(join(resultsDir, arm, modelDir)).at(-1);
     if (!latest) return [];
     const runDir = join(resultsDir, arm, modelDir, latest);
-    const model = modelDir.split("?")[0] ?? modelDir;
     return directories(runDir).flatMap((scenario) => {
       const summaryPath = join(runDir, scenario, "summary.json");
-      const counts = existsSync(summaryPath) ? runCounts(summaryPath) : null;
-      return counts ? [{ arm, model, scenario, ...counts }] : [];
+      const result = existsSync(summaryPath) ? runCounts(summaryPath) : null;
+      return result ? [{ arm, modelDir, scenario, result }] : [];
     });
   });
 }
 
+async function expectedModels(arm: string): Promise<string[]> {
+  const path = join(evalsDir, "experiments", `${arm}.ts`);
+  if (!existsSync(path)) return [];
+  const experiment: unknown = await import(pathToFileURL(path).href);
+  const config = isRecord(experiment) && isRecord(experiment.default) ? experiment.default : {};
+  const model = Array.isArray(config.model) ? config.model : [config.model];
+  return model.filter((name): name is string => typeof name === "string");
+}
+
+const scenarios = directories(join(evalsDir, "evals"));
+
+async function armRows(resultsDir: string, arm: string): Promise<Row[]> {
+  const rows = latestRows(resultsDir, arm);
+  if (rows.length === 0) return [{ arm, modelDir: "", scenario: "", result: "no results" }];
+  const missing = (await expectedModels(arm)).flatMap((modelDir) =>
+    scenarios
+      .filter(
+        (scenario) => !rows.some((row) => row.modelDir === modelDir && row.scenario === scenario),
+      )
+      .map((scenario) => ({ arm, modelDir, scenario, result: "missing" })),
+  );
+  return [...rows, ...missing];
+}
+
 const [resultsDir = "results", ...arms] = process.argv.slice(2);
-const rows = arms.flatMap((arm) => latestRows(resultsDir, arm));
-const armsWithoutResults = arms.filter((arm) => !rows.some((row) => row.arm === arm));
+if (arms.length === 0) {
+  process.stderr.write("Name at least one arm to summarize.\n");
+  process.exit(1);
+}
+const rows = (await Promise.all(arms.map((arm) => armRows(resultsDir, arm)))).flat();
+const incomplete = rows.some((row) => row.result === "no results" || row.result === "missing");
 
 const table = [
   "| Scenario | Arm | Model | Passed |",
   "| --- | --- | --- | --- |",
   ...rows.map(
-    (row) => `| ${row.scenario} | ${row.arm} | ${row.model} | ${row.passed}/${row.total} |`,
+    (row) => `| ${row.scenario} | ${row.arm} | ${row.modelDir.split("?")[0]} | ${row.result} |`,
   ),
-  ...armsWithoutResults.map((arm) => `| | ${arm} | | no results |`),
 ];
 process.stdout.write(`${table.join("\n")}\n`);
-if (armsWithoutResults.length > 0) process.exitCode = 1;
+if (incomplete) process.exitCode = 1;

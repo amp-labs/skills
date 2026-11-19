@@ -40,6 +40,7 @@ jobs:
           if [ "$ARMS" = all ]; then ARMS=$(for f in experiments/*.ts; do basename "$f" .ts; done | tr '\n' ' '); fi
           echo "ARMS_RUN=$ARMS" >> "$GITHUB_ENV"
           read -ra arms <<< "$ARMS"
+          if [ ${#arms[@]} -eq 0 ]; then echo "::error::Name at least one arm, or all"; exit 1; fi
           for arm in "${arms[@]}"; do npm run eval -- "$arm" || true; done
 
       - name: Summarize
