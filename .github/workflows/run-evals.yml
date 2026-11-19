@@ -181,8 +181,9 @@ jobs:
             cat summary.md
             printf '\n[%s run](%s) on %s\n' "$REPORT" "$RUN" "$COMMIT"
           } > comment.md
+          mine=".user.login == \"github-actions[bot]\" and (.body | startswith(\"$MARKER\"))"
           id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
-            --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | tail -1)
+            --jq ".[] | select($mine) | .id" | tail -1)
           if [ -n "$id" ]; then
             gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@comment.md
           else
