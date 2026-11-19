@@ -1,3 +1,3 @@
-import { arm } from '../lib/arm.ts';
+import { arm } from "../lib/arm.ts";
 
-export default arm('claude-code', ['amp-cli']);
+export default arm("claude-code", ["amp-cli"]);

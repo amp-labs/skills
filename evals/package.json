@@ -3,12 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "eval": "agent-eval run --force"
+    "eval": "agent-eval run --force",
+    "prepare": "vp config --no-agent"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@vercel/agent-eval": "3.0.0",
-    "typescript": "~5.9.3",
+    "vite-plus": "1.7.0",
     "vitest": "^2.1.9",
     "yaml": "^2.9.1"
   }

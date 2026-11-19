@@ -1,13 +1,13 @@
 # Skill evals
 
 These evals measure whether a skill makes coding agents better at real Ampersand tasks. Each scenario runs once
-per *arm* (an agent with a set of skills, or none) and per model, and its result is checked against a real
+per _arm_ (an agent with a set of skills, or none) and per model, and its result is checked against a real
 Ampersand project. Runs use [`@vercel/agent-eval`](https://github.com/vercel-labs/agent-eval), with a fresh Docker
 container for each run.
 
 ## Requirements
 
-- Node.js 22 or later
+- Node.js 22.22.1 or later, or 24.11 or later
 - Docker, running
 - A Claude credential: `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`) or `ANTHROPIC_API_KEY`
 - An Ampersand project used only for evals, and an API key for it. Runs create and delete integrations there.
@@ -44,8 +44,8 @@ directory that holds `linux_arm64/amp` and `linux_amd64/amp`.
 
 ## Scenarios
 
-| Scenario | Passes when |
-| --- | --- |
+| Scenario             | Passes when                                                                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `deploy-integration` | The agent deploys an `amp.yaml` with the project passed explicitly, then checks it with `amp list:integrations`, and the integration exists in the project |
 
 ## Add a scenario
@@ -56,3 +56,8 @@ directory that holds `linux_arm64/amp` and `linux_amd64/amp`.
 4. Add the scenario to the table above.
 
 Arms are in `experiments/`, and the models they run on are in `lib/models.ts`.
+
+## Checks
+
+`vp check` formats, lints, and type-checks this folder. `npm install` adds a pre-commit hook that runs it on
+staged files, and CI runs it on every pull request.

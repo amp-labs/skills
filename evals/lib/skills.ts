@@ -1,8 +1,8 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const skillsRoot = fileURLToPath(new URL('../../skills/', import.meta.url));
+const skillsRoot = fileURLToPath(new URL("../../skills/", import.meta.url));
 
 // Files that install the named skills as project skills in the sandbox workspace, under `targetDir`.
 export function skillFiles(names: string[], targetDir: string): Record<string, string> {
@@ -10,7 +10,7 @@ export function skillFiles(names: string[], targetDir: string): Record<string, s
   for (const name of names) {
     const dir = join(skillsRoot, name);
     for (const path of walk(dir)) {
-      files[join(targetDir, name, relative(dir, path))] = readFileSync(path, 'utf-8');
+      files[join(targetDir, name, relative(dir, path))] = readFileSync(path, "utf-8");
     }
   }
   return files;
