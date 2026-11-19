@@ -14,7 +14,8 @@ const localBuild = process.env.AMP_CLI_BUILD;
 
 const ampCli = localBuild ? `local build ${localBuild}` : `release ${release}`;
 
-// Installs amp behind a wrapper in the npm global bin directory, which the sandbox puts on PATH for the agent.
+// Installs amp behind a wrapper on the agent's PATH: the npm global bin directory, which the sandbox adds, and
+// ~/.local/bin, which ~/.profile adds for login shells such as the `bash -lc` that Codex runs commands in.
 // The sandbox image has no CA bundle and amp is a Go binary, so the wrapper points it at Node's root certificates.
 export async function installAmp(sandbox: Sandbox): Promise<void> {
   const arm = (await sandbox.runCommand("uname", ["-m"])).stdout.trim() === "aarch64";
@@ -25,12 +26,14 @@ export async function installAmp(sandbox: Sandbox): Promise<void> {
     "set -e",
     "prefix=$(npm config get prefix)",
     'bin="$prefix/bin" lib="$prefix/libexec"',
-    'mkdir -p "$bin" "$lib"',
+    'mkdir -p "$bin" "$lib" "$HOME/.local/bin"',
     ...install,
     `node -p "require('tls').rootCertificates.join('\\n')" > "$lib/ca-certificates.pem"`,
     `printf '#!/bin/sh\\nSSL_CERT_FILE="\${SSL_CERT_FILE:-%s}" exec %s "$@"\\n' "$lib/ca-certificates.pem" "$lib/amp" > "$bin/amp"`,
     'chmod +x "$bin/amp"',
+    'ln -sf "$bin/amp" "$HOME/.local/bin/amp"',
     "amp version",
+    'bash -lc "amp version"',
   ];
   const result = await sandbox.runCommand("bash", ["-c", script.join("\n")]);
   if (result.exitCode !== 0)
