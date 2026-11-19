@@ -33,6 +33,14 @@ test("records the effort of a tree that records none", () => {
   expect(recordedEffort(dir)).toBe("high\n");
 });
 
+test("records the effort of a results tree that does not exist yet", () => {
+  const dir = join(mkdtempSync(join(tmpdir(), "results-")), "results");
+  const run = recordEffort(dir, "medium");
+  expect(run.stderr).toBe("");
+  expect(run.status).toBe(0);
+  expect(recordedEffort(dir)).toBe("medium\n");
+});
+
 test("refuses to replace results another effort produced", () => {
   const dir = resultsTree({ records: "medium", holdsResults: true });
   const run = recordEffort(dir, "low");
