@@ -62,6 +62,7 @@ Arms are in `experiments/`, and the models they run on are in `lib/models.ts`.
 ## Checks
 
 `npm run check` formats, lints, and type-checks this folder. Lint rules forbid comments (`lint-plugin.ts`), `any`,
-type assertions, non-null assertions, unsafe use of `any` values, unhandled or misused promises, non-exhaustive `switch`
-statements, and `console`, and the script fails on `oxlint-disable` or `eslint-disable` comments. `npm install`
-adds a pre-commit hook that runs it, and CI runs it on every pull request.
+type assertions, non-null assertions, unsafe use of `any` values, unhandled or misused promises, non-exhaustive
+`switch` statements, and `console`. The script also fails on `oxlint-disable` or `eslint-disable` comments, and when a
+skill in `skills/` has no arm in `experiments/`. `npm install` adds a pre-commit hook that runs it, and CI runs it on
+every pull request.
