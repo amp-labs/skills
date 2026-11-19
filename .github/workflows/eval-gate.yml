@@ -1,0 +1,72 @@
+name: eval-gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eval-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: arms to compare
+    runs-on: ubuntu-latest
+    outputs:
+      arms: ${{ steps.arms.outputs.arms }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: arms
+        env:
+          DRAFT: ${{ github.event.pull_request.draft }}
+          FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          changed=$(git diff --name-only origin/main...HEAD)
+          arms=()
+          if grep -qE '^evals/(lib|experiments|evals)/|^evals/package(-lock)?\.json$' <<< "$changed"; then
+            arms=(all)
+          else
+            mapfile -t skills < <(grep -oE '^skills/[^/]+' <<< "$changed" | cut -d/ -f2 | sort -u)
+            for skill in "${skills[@]}"; do
+              mapfile -t experiments < <(grep -lF "\"$skill\"" evals/experiments/*.ts)
+              for experiment in "${experiments[@]}"; do arms+=("$(basename "$experiment" .ts)"); done
+            done
+          fi
+          if [ ${#arms[@]} -gt 0 ] && [ "$FORK" = true ]; then
+            echo "::error::Evals need this repository's secrets. Push the branch to this repository to run them."
+            exit 1
+          fi
+          if [ ${#arms[@]} -gt 0 ] && [ "$DRAFT" = true ]; then
+            echo "::notice::Evals run when the pull request is ready for review."
+            arms=()
+          fi
+          echo "arms=${arms[*]}" >> "$GITHUB_OUTPUT"
+
+  evals:
+    needs: changes
+    if: needs.changes.outputs.arms != ''
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/run-evals.yml
+    with:
+      arms: ${{ needs.changes.outputs.arms }}
+
+  gate:
+    name: eval-gate
+    needs: [changes, evals]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          CHANGES: ${{ needs.changes.result }}
+          EVALS: ${{ needs.evals.result }}
+        run: |
+          echo "arms to compare: $CHANGES, evals: $EVALS"
+          [ "$CHANGES" = success ] && { [ "$EVALS" = success ] || [ "$EVALS" = skipped ]; }

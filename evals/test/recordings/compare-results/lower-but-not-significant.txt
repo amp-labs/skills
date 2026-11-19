@@ -1,0 +1,8 @@
+$ node scripts/compare-results.ts test/fixtures/results test/fixtures/main-results claude-amp-cli
+exit code: 0
+stdout:
+| Arm | main | branch | p | Verdict |
+| --- | --- | --- | --- | --- |
+| claude-amp-cli | 9/9 | 8/9 | 0.500 | lower, not significant |
+
+stderr:

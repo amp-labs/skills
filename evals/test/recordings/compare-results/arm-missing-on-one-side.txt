@@ -1,0 +1,9 @@
+$ node scripts/compare-results.ts test/fixtures/results test/fixtures/main-results claude-no-skills codex-no-skills
+exit code: 0
+stdout:
+| Arm | main | branch | p | Verdict |
+| --- | --- | --- | --- | --- |
+| claude-no-skills | 0/0 | 3/3 | - | no baseline |
+| codex-no-skills | 3/3 | 0/0 | - | no results |
+
+stderr:
