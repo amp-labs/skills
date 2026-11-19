@@ -1,0 +1,30 @@
+{
+  "o11y": {
+    "shellCommands": [
+      {
+        "command": "/bin/bash -lc \"pwd && rg --files -g 'AGENTS.md' -g '*hubspot*' -g 'package.json' -g 'README*' -g 'Makefile' -g '*.yaml' -g '*.yml' -g '*.json' integrations/hubspot .\""
+      },
+      {
+        "command": "/bin/bash -lc 'find .. -name AGENTS.md -print; cat package.json; cat integrations/hubspot/amp.yaml; rg --files | head -80'"
+      },
+      {
+        "command": "/bin/bash -lc \"command -v amp || true; command -v ampersand || true; ls -la; ls -la integrations/hubspot; env | cut -d= -f1 | sort | rg -i 'amp|hub|project|deploy|token|api' || true\""
+      },
+      {
+        "command": "/bin/bash -lc 'amp --help'"
+      },
+      {
+        "command": "/bin/bash -lc 'amp deploy --help; amp list:projects --help'"
+      },
+      {
+        "command": "/bin/bash -lc 'amp list:projects'"
+      },
+      {
+        "command": "/bin/bash -lc 'amp --project acme-dev deploy integrations/hubspot/amp.yaml'"
+      },
+      {
+        "command": "/bin/bash -lc 'amp --project acme-dev list:integrations'"
+      }
+    ]
+  }
+}

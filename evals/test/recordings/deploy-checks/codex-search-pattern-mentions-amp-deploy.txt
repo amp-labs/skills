@@ -1,0 +1,13 @@
+$ /bin/bash -lc "pwd && rg --files -g 'AGENTS.md' -g '*ampersand*' -g '*hubspot*' -g 'package.json' -g 'README*' -g 'Makefile' -g '*.yaml' -g '*.yml' -g '*.json' | head -200"
+$ /bin/bash -lc "ls -la && find integrations/hubspot -maxdepth 3 -type f -print && cat package.json && sed -n '1,240p' integrations/hubspot/amp.yaml"
+$ /bin/bash -lc "rg -n -i \"ampersand|amp deploy|deployment|acme-dev\" . --glob '"'!node_modules/**'"' --glob '"'!package-lock.json'"' && command -v amp || true && command -v ampersand || true && git status --short"
+$ /bin/bash -lc 'if [ -n "${AMP_API_KEY:-}" ]; then echo AMP_API_KEY=set; else echo AMP_API_KEY=unset; fi
+  if [ -n "${AMP_PROJECT_ID:-}" ]; then echo AMP_PROJECT_ID=set; else echo AMP_PROJECT_ID=unset; fi
+  if command -v amp >/dev/null 2>&1; then command -v amp; else echo amp=not-installed; fi
+  find .. -name AGENTS.md -print'
+$ /bin/bash -lc 'amp version && amp deploy --help'
+$ /bin/bash -lc 'amp deploy integrations/hubspot --project acme-dev'
+$ /bin/bash -lc 'amp list:integrations --project acme-dev'
+
+deploys with the project passed explicitly: passed
+verifies the deploy with a read command afterwards: passed

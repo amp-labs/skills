@@ -1,0 +1,10 @@
+$ node scripts/summarize-results.ts test/fixtures/results claude-amp-cli-medium
+exit code: 1
+stdout:
+| Scenario | Arm | Model | Passed |
+| --- | --- | --- | --- |
+| deploy-integration | claude-amp-cli-medium | claude-opus-5-5 | 3/3 |
+| deploy-integration | claude-amp-cli-medium | claude-sonnet-5-5 | missing |
+| deploy-integration | claude-amp-cli-medium | claude-haiku-5-5 | missing |
+
+stderr:

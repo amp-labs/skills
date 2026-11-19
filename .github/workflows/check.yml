@@ -35,3 +35,6 @@ jobs:
 
       - name: Format, lint, and type-check
         run: npm run check
+
+      - name: Test
+        run: npm test

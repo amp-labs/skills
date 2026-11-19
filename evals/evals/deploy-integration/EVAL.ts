@@ -58,9 +58,22 @@ const ampArgumentsInOrder: string[][] = shellCommandsRun(results)
   .flatMap(simpleCommandsUnquotedAndUnwrapped)
   .filter((words) => /(^|\/)amp$/.test(words[0] ?? ""))
   .map((words) => words.slice(1));
+const globalFlagsTakingValue = new Set(["-p", "--project", "-k", "--key", "-r", "--region"]);
+
+function subcommandOf(args: readonly string[]): string | undefined {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i] ?? "";
+    if (!arg.startsWith("-")) return arg;
+    if (globalFlagsTakingValue.has(arg)) i++;
+  }
+  return undefined;
+}
+
 const deploys = ampArgumentsInOrder
   .map((args, i) => [args, i] as const)
-  .filter(([args]) => args[0] === "deploy" && !args.includes("--help") && !args.includes("-h"));
+  .filter(
+    ([args]) => subcommandOf(args) === "deploy" && !args.includes("--help") && !args.includes("-h"),
+  );
 
 test("deploys with the project passed explicitly", () => {
   expect(deploys.length).toBeGreaterThan(0);
@@ -71,6 +84,8 @@ test("deploys with the project passed explicitly", () => {
 test("verifies the deploy with a read command afterwards", () => {
   const lastDeploy = deploys.at(-1)?.[1] ?? Infinity;
   expect(
-    ampArgumentsInOrder.slice(lastDeploy + 1).some((args) => args[0] === "list:integrations"),
+    ampArgumentsInOrder
+      .slice(lastDeploy + 1)
+      .some((args) => subcommandOf(args) === "list:integrations"),
   ).toBe(true);
 });

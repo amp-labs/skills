@@ -1,0 +1,46 @@
+$ /bin/bash -lc "pwd; git status --short; rg --files -g 'AGENTS.md' -g '*ampersand*' -g '*hubspot*' -g 'README*' -g 'package.json' -g '"'!node_modules'"' -g '"'!*lock*'"'; ls -la integrations/hubspot; command -v amp"
+$ /bin/bash -lc 'git status -sb; git ls-files; ls -la; cat integrations/hubspot/amp.yaml package.json; for f in /home/sandbox/AGENTS.md /home/sandbox/workspace/AGENTS.md integrations/AGENTS.md integrations/hubspot/AGENTS.md; do if test -f "$f"; then cat "$f"; fi; done; printenv | cut -d= -f1 | sort | rg -i '"'amp|proxy|token|key|path'"
+$ /bin/bash -lc "uname -sm; command -v go; npm config get registry; git remote -v; printf '%s\\n' \""'$PATH"'
+$ /bin/bash -lc 'set -e
+  amp_work=$(mktemp -d /tmp/acme-amp.XXXXXX)
+  printf '"'%s\\n' \""'$amp_work"
+  curl -fsSL --max-time 25 '"'https://github.com/amp-labs/cli/releases/download/v1.2.0/ampersand-cli_1.2.0%2Bgit-1_arm64.deb' -o \""'$amp_work/amp.deb"
+  printf '"'%s  %s\\n' b95874f6f52ce333c68de711dc9b1e452ce333c68de711dc9b1e4 \""'$amp_work/amp.deb" >/dev/null
+  printf '"'%s  %s\\n' b95874f6f52ce333c68de711dc9b1e42cccb7 \""'$amp_work/amp.deb" >/dev/null
+  printf '"'%s  %s\\n' b95874f6f52ce333c68de711dc9b1e42cccb7 \""'$amp_work/amp.deb" >/dev/null
+  sha256sum "$amp_work/amp.deb"
+  dpkg-deb -x "$amp_work/amp.deb" "$amp_work/bin"
+  find "$amp_work/bin" -name amp'
+$ /bin/bash -lc "set -e
+  command -v python3
+  command -v dpkg-deb
+  python3 - <<'PY'
+  import hashlib, pathlib, urllib.request
+  url = 'https://github.com/amp-labs/cli/releases/download/v1.2.0/ampersand-cli_1.2.0%2Bgit-1_arm64.deb'
+  data = urllib.request.urlopen(url, timeout=25).read()
+  assert hashlib.sha256(data).hexdigest() == 'b95874f6f52ce333c68de711dc9b1d427d3cbc8783b36b5d84623e0fa5b4d19d'
+  pathlib.Path('/tmp/acme-amp.eNG0xF/amp.deb').write_bytes(data)
+  PY
+  dpkg-deb -x /tmp/acme-amp.eNG0xF/amp.deb /tmp/acme-amp.eNG0xF/bin
+  find /tmp/acme-amp.eNG0xF/bin -name amp"
+$ /bin/bash -lc "command -v node wget busybox dpkg-deb tar ar sha256sum
+  node - <<'JS'
+  const url = 'https://github.com/amp-labs/cli/releases/download/v1.2.0/ampersand-cli_1.2.0%2Bgit-1_arm64.deb';
+  const res = await fetch(url, {signal: AbortSignal.timeout(25000)});
+  if ("'!res.ok) throw Error('"'GitHub download HTTP ' + res.status);
+  const data = Buffer.from(await res.arrayBuffer());
+  const hash = (await import('node:crypto')).createHash('sha256').update(data).digest('hex');
+  if (hash "'!== '"'b95874f6f52ce333c68de711dc9b1d427d3cbc8783b36b5d84623e0fa5b4d19d') throw Error('SHA-256 mismatch');
+  (await import('node:fs')).writeFileSync('/tmp/acme-amp.eNG0xF/amp.deb', data);
+  JS"
+$ /bin/bash -lc 'set -e
+  dpkg-deb -x /tmp/acme-amp.eNG0xF/amp.deb /tmp/acme-amp.eNG0xF/bin
+  find /tmp/acme-amp.eNG0xF/bin -name amp
+  /tmp/acme-amp.eNG0xF/bin/usr/bin/amp deploy --help
+  /tmp/acme-amp.eNG0xF/bin/usr/bin/amp deploy integrations/hubspot -p acme-dev'
+$ /bin/bash -lc '/tmp/acme-amp.eNG0xF/bin/usr/bin/amp --help; git status --short'
+$ /bin/bash -lc 'set -o pipefail
+  /tmp/acme-amp.eNG0xF/bin/usr/bin/amp list:integrations -p acme-dev | rg -F hubspotContactsad6b4e5b'
+
+deploys with the project passed explicitly: passed
+verifies the deploy with a read command afterwards: passed
