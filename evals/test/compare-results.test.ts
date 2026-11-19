@@ -9,6 +9,7 @@ const cases: Record<string, string[]> = {
   "lower-but-not-significant": [...results, "claude-amp-cli"],
   "significant-drop": [...results, "claude-amp-cli", "codex-amp-cli"],
   "arm-missing-on-one-side": [...results, "claude-no-skills", "codex-no-skills"],
+  "scenario-only-on-this-branch": [...results, "added-scenario"],
 };
 
 test.each(Object.keys(cases))("%s", async (name) => {
