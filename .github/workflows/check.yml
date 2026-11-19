@@ -34,4 +34,4 @@ jobs:
           working-directory: evals
 
       - name: Format, lint, and type-check
-        run: vp check
+        run: npm run check

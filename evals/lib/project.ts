@@ -2,53 +2,72 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 
-// The Ampersand project the evals run in, and a key for it. Both come from the host environment.
-export const project = process.env.AMP_EVAL_PROJECT;
-const key = process.env.AMP_API_KEY;
-const api = "https://api.withampersand.com/v1";
+export const evalProject = process.env.AMP_EVAL_PROJECT;
+const ampersandApi = "https://api.withampersand.com/v1";
 
-// Setup replaces this in a scenario's amp.yaml with an id unique to the run (see lib/arm.ts).
 export const runIdPlaceholder = "{{run}}";
 const runIdPattern = "[0-9a-f]{8}";
 
 type Integration = { id: string; name: string };
 
-async function request(method: string, path: string): Promise<unknown> {
-  const response = await fetch(`${api}/projects/${project}${path}`, {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+async function requestEvalProject(method: "GET" | "DELETE", path: string): Promise<unknown> {
+  const apiKey = process.env.AMP_API_KEY;
+  if (!apiKey) throw new Error("AMP_API_KEY is not set");
+  const response = await fetch(`${ampersandApi}/projects/${evalProject}${path}`, {
     method,
-    headers: { "X-Api-Key": key! },
+    headers: { "X-Api-Key": apiKey },
   });
   if (!response.ok)
     throw new Error(`${method} ${path}: ${response.status} ${await response.text()}`);
-  return method === "GET" ? response.json() : undefined;
+  const body: unknown = method === "GET" ? await response.json() : undefined;
+  return body;
 }
 
-// The scenario's integrations that this run deployed, from amp's deploy confirmations in the run's transcript.
-// Other runs' names can appear in a listing of the shared project, but only this run's deploys confirm here.
-export function deployedByRun(scenarioDir: string, transcript = ""): string[] {
-  const templates = ampYamlFiles(scenarioDir)
-    .flatMap((path) =>
-      (parse(readFileSync(path, "utf-8"))?.integrations ?? []).map((i: { name: string }) => i.name),
-    )
-    .filter((name: string) => name.includes(runIdPlaceholder));
-  const names = templates.flatMap((template: string) => {
-    const name = template.split(runIdPlaceholder).map(escape).join(runIdPattern);
-    const confirmation = new RegExp(`Successfully deployed your integration (${name})`, "g");
-    return [...transcript.matchAll(confirmation)].map((match) => match[1]);
+function integrationsIn(body: unknown): Integration[] {
+  if (!Array.isArray(body)) throw new Error("the integrations response is not a list");
+  return body.flatMap((item: unknown) =>
+    isRecord(item) && typeof item.id === "string" && typeof item.name === "string"
+      ? [{ id: item.id, name: item.name }]
+      : [],
+  );
+}
+
+function integrationNames(manifest: unknown): string[] {
+  if (!isRecord(manifest) || !Array.isArray(manifest.integrations)) return [];
+  return manifest.integrations.flatMap((item: unknown) =>
+    isRecord(item) && typeof item.name === "string" ? [item.name] : [],
+  );
+}
+
+export function integrationsConfirmedDeployedIn(scenarioDir: string, transcript = ""): string[] {
+  const runSpecificNames = ampYamlFiles(scenarioDir)
+    .flatMap((path) => {
+      const manifest: unknown = parse(readFileSync(path, "utf-8"));
+      return integrationNames(manifest);
+    })
+    .filter((name) => name.includes(runIdPlaceholder));
+  const confirmed = runSpecificNames.flatMap((template) => {
+    const name = template.split(runIdPlaceholder).map(escapeRegExp).join(runIdPattern);
+    const deployConfirmation = new RegExp(`Successfully deployed your integration (${name})`, "g");
+    return [...transcript.matchAll(deployConfirmation)].flatMap((match) => match[1] ?? []);
   });
-  return [...new Set(names)];
+  return [...new Set(confirmed)];
 }
 
-// Checks that each named integration exists in the project, then deletes it so runs don't affect each other.
 export async function expectDeployedThenDelete(names: string[]): Promise<void> {
   if (names.length === 0) throw new Error("the run never deployed the integration");
-  const deployed = (await request("GET", "/integrations")) as Integration[];
-  const missing = names.filter((name) => !deployed.some((i) => i.name === name));
-  for (const integration of deployed.filter((i) => names.includes(i.name))) {
-    await request("DELETE", `/integrations/${integration.id}`);
+  const deployed = integrationsIn(await requestEvalProject("GET", "/integrations"));
+  const missing = names.filter(
+    (name) => !deployed.some((integration) => integration.name === name),
+  );
+  for (const integration of deployed.filter((each) => names.includes(each.name))) {
+    await requestEvalProject("DELETE", `/integrations/${integration.id}`);
   }
   if (missing.length > 0)
-    throw new Error(`not deployed to project ${project}: ${missing.join(", ")}`);
+    throw new Error(`not deployed to project ${evalProject}: ${missing.join(", ")}`);
 }
 
 function ampYamlFiles(dir: string): string[] {
@@ -59,6 +78,6 @@ function ampYamlFiles(dir: string): string[] {
   });
 }
 
-function escape(text: string): string {
+function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
