@@ -1,0 +1,7 @@
+specVersion: 1.0.0
+integrations:
+  - name: hubspotContacts{{run}}
+    provider: hubspot
+    write:
+      objects:
+        - objectName: contacts

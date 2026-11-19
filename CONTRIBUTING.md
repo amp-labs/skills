@@ -4,7 +4,8 @@ Thanks for helping improve Ampersand Agent Skills.
 
 ## Guidelines
 
-- Test skill changes with a real task and describe the result in your pull request.
+- Test skill changes with a real task and describe the result in your pull request. The
+  [evals](evals/README.md) run real tasks with and without a skill.
 - Add guidance only when a test shows that an agent needs it.
 - Use the installed `amp` help instead of remembered syntax.
 - Depend only on public commands shown by the installed CLI.
