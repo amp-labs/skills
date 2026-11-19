@@ -29,6 +29,7 @@ jobs:
       runs: ${{ steps.plan.outputs.runs }}
       branch_arms: ${{ steps.plan.outputs.branch_arms }}
       main_arms: ${{ steps.plan.outputs.main_arms }}
+      main_sha: ${{ steps.plan.outputs.main_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -47,13 +48,18 @@ jobs:
           read -ra branch_arms <<< "$ARMS"
           if [ ${#branch_arms[@]} -eq 0 ]; then echo "::error::Name at least one arm, or all"; exit 1; fi
           main_arms=()
-          if [ -d main-branch ]; then read -ra main_arms <<< "$(arms_in main-branch)"; fi
+          main_sha=
+          if [ -d main-branch ]; then
+            main_sha=$(git -C main-branch rev-parse HEAD)
+            read -ra main_arms <<< "$(arms_in main-branch)"
+          fi
           runs=$(jq -cn --args '[$ARGS.positional[] | capture("^(?<side>[^:]+):(?<arm>.+)$")]' \
             "${branch_arms[@]/#/branch:}" "${main_arms[@]/#/main:}")
           {
             echo "runs=$runs"
             echo "branch_arms=${branch_arms[*]}"
             echo "main_arms=${main_arms[*]}"
+            echo "main_sha=$main_sha"
           } >> "$GITHUB_OUTPUT"
 
   run:
@@ -75,12 +81,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.side == 'main' && 'main' || '' }}
+          ref: ${{ matrix.side == 'main' && needs.plan.outputs.main_sha || '' }}
 
       - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version: "24"
           working-directory: evals
+
+      - name: Check the eval project is set
+        run: |
+          if [ -z "$AMP_EVAL_PROJECT" ]; then
+            echo "::error::AMP_EVAL_PROJECT is empty. Set it in the evals environment."
+            exit 1
+          fi
 
       - name: Run the arm
         working-directory: evals
@@ -99,6 +112,13 @@ jobs:
           name: summaries-${{ matrix.side }}-${{ matrix.arm }}
           path: ${{ runner.temp }}/summaries.tgz
           retention-days: 7
+          overwrite: true
+
+      - name: Fail if this arm produced no results
+        working-directory: evals
+        env:
+          ARM: ${{ matrix.arm }}
+        run: node scripts/summarize-results.ts results "$ARM" >> "$GITHUB_STEP_SUMMARY"
 
   report:
     name: eval report
@@ -118,7 +138,7 @@ jobs:
       - uses: actions/checkout@v4
         if: github.event_name == 'pull_request'
         with:
-          ref: main
+          ref: ${{ needs.plan.outputs.main_sha }}
           path: main-branch
 
       - uses: voidzero-dev/setup-vp@v1.22.0

@@ -84,7 +84,9 @@ table; transcripts stay out of CI because the repository is public.
 - Add the `run-evals` label to a pull request from this repository. It runs every arm on the branch and on `main`,
   and comments both tables. Remove and add the label again to rerun.
 
-Each arm runs in its own job, so a full run takes about as long as its slowest arm.
+Each arm runs in its own job, so a full run takes about as long as its slowest arm. Every baseline arm and the
+report use the one `main` commit the run started from. An arm whose results are incomplete fails its own job, so
+**Re-run failed jobs** runs that arm again.
 
 ## Checks
 
