@@ -5,11 +5,12 @@ export const modelsByAgent = {
 
 export type Agent = keyof typeof modelsByAgent;
 
-const efforts = ["low", "medium", "high"] as const;
+export const efforts = ["low", "medium", "high"] as const;
 
-type Effort = (typeof efforts)[number];
+export type Effort = (typeof efforts)[number];
 
-const isEffort = (value: string): value is Effort => efforts.some((effort) => effort === value);
+export const isEffort = (value: string): value is Effort =>
+  efforts.some((effort) => effort === value);
 
 export function effortFromEnvironment(): Effort {
   const requested = process.env.EVAL_EFFORT || "medium";

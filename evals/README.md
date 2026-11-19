@@ -32,6 +32,10 @@ Agents run at medium reasoning effort unless `EVAL_EFFORT` is `low` or `high`.
 
 Results go to `results/<arm>/<model>/<timestamp>/<scenario>/`. To browse them, run `npx agent-eval playground`.
 
+A results tree holds one effort, recorded in `results/effort`. Claude Code results are keyed by arm and model
+alone, so a run at a second effort would replace them: `npm run eval` stops instead. Move `results/` aside to
+switch efforts.
+
 `npm run eval` passes `--force`, so every run is fresh. agent-eval's result cache doesn't notice changes to the
 skills or to the `amp` CLI.
 
