@@ -1,0 +1,4 @@
+transcript:
+Successfully deployed your integration hubspotContacts{{run}}.
+
+credited to the run: none

@@ -61,6 +61,13 @@ directory that holds `linux_arm64/amp` and `linux_amd64/amp`.
 
 Arms are in `experiments/`, and the models they run on are in `lib/models.ts`.
 
+## Tests
+
+`npm test` runs expect tests in `test/`. Each runs real code on a fixed input from `test/fixtures/` and records
+the whole output to a file in `test/recordings/`: the deploy checks on recorded agent commands, which deploys a
+transcript credits to a run, and the pass-rate table. When behavior changes on purpose, read the diff, then run
+`npx vp test -u` to update the recording.
+
 ## Run in CI
 
 Maintainers can run the evals on GitHub with the keys in the `evals` environment. Results appear as a pass-rate

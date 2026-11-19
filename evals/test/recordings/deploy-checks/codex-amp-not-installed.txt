@@ -1,0 +1,5 @@
+$ /bin/bash -lc 'cat /home/sandbox/workspace/.agents/skills/amp-cli/SKILL.md && pwd && rg --files integrations/hubspot'
+$ /bin/bash -lc 'amp version && amp --help && amp list:projects --help'
+
+deploys with the project passed explicitly: failed
+verifies the deploy with a read command afterwards: failed

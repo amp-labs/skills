@@ -5,7 +5,8 @@
   "scripts": {
     "eval": "agent-eval run --force",
     "prepare": "vp config --no-agent",
-    "check": "vp check && ! git grep --untracked -nE '(oxlint|eslint)-(disable|enable)' -- '*.ts' && node scripts/every-skill-has-an-arm.ts"
+    "check": "vp check && ! git grep --untracked -nE '(oxlint|eslint)-(disable|enable)' -- '*.ts' && node scripts/every-skill-has-an-arm.ts",
+    "test": "vp test"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

@@ -1,0 +1,12 @@
+{
+  "o11y": {
+    "shellCommands": [
+      {
+        "command": "/bin/bash -lc 'cat /home/sandbox/workspace/.agents/skills/amp-cli/SKILL.md && pwd && rg --files integrations/hubspot'"
+      },
+      {
+        "command": "/bin/bash -lc 'amp version && amp --help && amp list:projects --help'"
+      }
+    ]
+  }
+}

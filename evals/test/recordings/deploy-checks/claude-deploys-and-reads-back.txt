@@ -1,0 +1,7 @@
+$ cd /home/sandbox/workspace; amp version; amp --help; ls -la integrations/hubspot
+$ cd /home/sandbox/workspace; cat integrations/hubspot/amp.yaml; amp deploy --help; amp list:projects
+$ cd /home/sandbox/workspace; amp list:integrations --project acme-dev; echo "exit=$?"
+$ cd /home/sandbox/workspace; amp deploy integrations/hubspot --project acme-dev; echo "exit=$?"; amp list:integrations --project acme-dev; echo "exit=$?"
+
+deploys with the project passed explicitly: passed
+verifies the deploy with a read command afterwards: passed

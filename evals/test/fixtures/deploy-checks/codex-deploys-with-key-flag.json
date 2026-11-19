@@ -1,0 +1,45 @@
+{
+  "o11y": {
+    "shellCommands": [
+      {
+        "command": "/bin/bash -lc \"ls -la integrations/hubspot && rg --files -g 'AGENTS.md' -g '*ampersand*' -g 'package.json' -g 'README*' | head -100\""
+      },
+      {
+        "command": "/bin/bash -lc \"command -v amp || true; command -v ampersand || true; rg -n -i 'ampersand|acme-dev|hubspot' . --glob '\"'!node_modules/**'\"'\""
+      },
+      {
+        "command": "/bin/bash -lc 'for f in /AGENTS.md /home/AGENTS.md /home/sandbox/AGENTS.md /home/sandbox/workspace/AGENTS.md /home/sandbox/workspace/integrations/AGENTS.md /home/sandbox/workspace/integrations/hubspot/AGENTS.md; do if [ -f \"$f\" ]; then printf '\"'\\\\n%s\\\\n' \\\"\"'$f\"; cat \"$f\"; fi; done'"
+      },
+      {
+        "command": "/bin/bash -lc 'pwd && ls -la && cat integrations/hubspot/amp.yaml && cat package.json'"
+      },
+      {
+        "command": "/bin/bash -lc 'ls node_modules/.bin && git status --short && ls -la ~/.config'"
+      },
+      {
+        "command": "/bin/bash -lc \"env | cut -d= -f1 | sort | rg -i 'amp|token|key|project'\""
+      },
+      {
+        "command": "/bin/bash -lc \"ls -la __agent_eval__ && rg --files -uu -g '\"'!node_modules/**'\"' -g '\"'!.git/**'\"'\""
+      },
+      {
+        "command": "/bin/bash -lc \"curl -fsSL 'https://github.com/amp-labs/cli/releases/download/v1.0.7/ampersand-cli_1.0.7+git-1_amd64.deb' -o /tmp/ampersand-cli.deb && dpkg-deb -x /tmp/ampersand-cli.deb /tmp/ampersand-cli && /tmp/ampersand-cli/usr/local/ampersand-cli/bin/amp deploy --help\""
+      },
+      {
+        "command": "/bin/bash -lc \"python3 -c 'import urllib.request; urllib.request.urlretrieve(\\\"https://github.com/amp-labs/cli/releases/download/v1.0.7/ampersand-cli_1.0.7+git-1_amd64.deb\\\", \\\"/tmp/ampersand-cli.deb\\\")' && dpkg-deb -x /tmp/ampersand-cli.deb /tmp/ampersand-cli && /tmp/ampersand-cli/usr/local/ampersand-cli/bin/amp deploy --help\""
+      },
+      {
+        "command": "/bin/bash -lc \"node -e 'fetch(\\\"https://github.com/amp-labs/cli/releases/download/v1.0.7/ampersand-cli_1.0.7+git-1_amd64.deb\\\").then(async r=>{if(\"'!r.ok)throw Error(`HTTP ${r.status}`);require(\"fs\").writeFileSync(\"/tmp/ampersand-cli.deb\",Buffer.from(await r.arrayBuffer()))}).catch(e=>{console.error(e);process.exit(1)})'\"' && dpkg-deb -x /tmp/ampersand-cli.deb /tmp/ampersand-cli && /tmp/ampersand-cli/usr/local/ampersand-cli/bin/amp deploy --help\""
+      },
+      {
+        "command": "/bin/bash -lc 'find /tmp/ampersand-cli -type f'"
+      },
+      {
+        "command": "/bin/bash -lc '/tmp/ampersand-cli/usr/bin/amp deploy --help'"
+      },
+      {
+        "command": "/bin/bash -lc '/tmp/ampersand-cli/usr/bin/amp deploy integrations/hubspot --project acme-dev --key \"$AMP_API_KEY\"'"
+      }
+    ]
+  }
+}

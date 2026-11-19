@@ -1,0 +1,12 @@
+{
+  "o11y": {
+    "shellCommands": [
+      {
+        "command": "ls integrations/hubspot; cat integrations/hubspot/amp.y* 2>/dev/null | head -50; which amp"
+      },
+      {
+        "command": "amp deploy integrations/hubspot --project acme-dev 2>&1 || amp --help 2>&1 | head -30"
+      }
+    ]
+  }
+}

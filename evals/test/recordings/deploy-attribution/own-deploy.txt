@@ -1,0 +1,4 @@
+transcript:
+Successfully deployed your integration hubspotContacts1a2b3c4d.
+
+credited to the run: hubspotContacts1a2b3c4d

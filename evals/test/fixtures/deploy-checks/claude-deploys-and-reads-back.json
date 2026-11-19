@@ -1,0 +1,18 @@
+{
+  "o11y": {
+    "shellCommands": [
+      {
+        "command": "cd /home/sandbox/workspace; amp version; amp --help; ls -la integrations/hubspot"
+      },
+      {
+        "command": "cd /home/sandbox/workspace; cat integrations/hubspot/amp.yaml; amp deploy --help; amp list:projects"
+      },
+      {
+        "command": "cd /home/sandbox/workspace; amp list:integrations --project acme-dev; echo \"exit=$?\""
+      },
+      {
+        "command": "cd /home/sandbox/workspace; amp deploy integrations/hubspot --project acme-dev; echo \"exit=$?\"; amp list:integrations --project acme-dev; echo \"exit=$?\""
+      }
+    ]
+  }
+}
