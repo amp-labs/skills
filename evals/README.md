@@ -9,7 +9,8 @@ container for each run.
 
 - Node.js 22.22.1 or later, or 24.11 or later
 - Docker, running
-- A Claude credential: `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`) or `ANTHROPIC_API_KEY`
+- For the Claude arms, `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`) or `ANTHROPIC_API_KEY`
+- For the Codex arms, `OPENAI_API_KEY`
 - An Ampersand project used only for evals, and an API key for it. Runs create and delete integrations there.
 
 ## Run
@@ -35,7 +36,8 @@ directory that holds `linux_arm64/amp` and `linux_amd64/amp`.
 ## How a run works
 
 1. agent-eval starts a container with the scenario's files.
-2. Setup installs `amp` and copies the arm's skills into `.claude/skills/`. It also replaces `{{run}}` in
+2. Setup installs `amp` and copies the arm's skills where its agent looks for them: `.claude/skills/` for Claude
+   Code, `.agents/skills/` for Codex. It also replaces `{{run}}` in
    `amp.yaml` integration names with an ID unique to the run, so parallel runs don't collide in the project.
 3. The agent gets `PROMPT.md`, with `{{project}}` replaced by `AMP_EVAL_PROJECT`. `amp` reads `AMP_API_KEY`.
 4. `EVAL.ts` checks the agent's work, such as the `amp` commands it ran.
