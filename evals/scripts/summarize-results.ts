@@ -1,6 +1,7 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { directories, latestResults } from "../lib/results.ts";
 
 type Row = { arm: string; modelDir: string; scenario: string; result: string };
 
@@ -9,37 +10,13 @@ const evalsDir = fileURLToPath(new URL("../", import.meta.url));
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const directories = (path: string): string[] =>
-  existsSync(path)
-    ? readdirSync(path, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .sort()
-    : [];
-
-function runCounts(summaryPath: string): string | null {
-  const summary: unknown = JSON.parse(readFileSync(summaryPath, "utf-8"));
-  if (
-    !isRecord(summary) ||
-    typeof summary.passedRuns !== "number" ||
-    typeof summary.totalRuns !== "number"
-  )
-    return null;
-  return `${summary.passedRuns}/${summary.totalRuns}`;
-}
-
-function latestRows(resultsDir: string, arm: string): Row[] {
-  return directories(join(resultsDir, arm)).flatMap((modelDir) => {
-    const latest = directories(join(resultsDir, arm, modelDir)).at(-1);
-    if (!latest) return [];
-    const runDir = join(resultsDir, arm, modelDir, latest);
-    return directories(runDir).flatMap((scenario) => {
-      const summaryPath = join(runDir, scenario, "summary.json");
-      const result = existsSync(summaryPath) ? runCounts(summaryPath) : null;
-      return result ? [{ arm, modelDir, scenario, result }] : [];
-    });
-  });
-}
+const latestRows = (resultsDir: string, arm: string): Row[] =>
+  latestResults(resultsDir, arm).map(({ modelDir, scenario, passedRuns, totalRuns }) => ({
+    arm,
+    modelDir,
+    scenario,
+    result: `${passedRuns}/${totalRuns}`,
+  }));
 
 async function expectedModels(arm: string): Promise<string[]> {
   const path = join(evalsDir, "experiments", `${arm}.ts`);

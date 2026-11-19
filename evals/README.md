@@ -89,6 +89,14 @@ report use the one `main` commit the run started from. An arm whose results are 
 **Re-run failed jobs** runs that arm again and rebuilds the report from the other arms' summaries. Summaries are
 kept for seven days, so a later rerun needs **Re-run all jobs**.
 
+The `eval-gate` check runs on every pull request that is ready for review. A change to a skill runs the arms that use
+it; a change to `lib/`, `experiments/`, `evals/`, or the package files runs every arm. Each arm also runs on `main`,
+and the check fails when an arm passes significantly less often than on `main` (one-sided Fisher exact test,
+p < 0.05). Only the model and scenario pairs both sides ran count toward the test, so adding a model or a scenario
+is not a regression; the table reports how many pairs each side ran alone. Pull requests that change nothing it
+covers pass without running evals. Pull requests from forks cannot use the keys, so the check fails when they
+change a skill or the harness.
+
 ## Checks
 
 `npm run check` formats, lints, and type-checks this folder. Lint rules forbid comments (`lint-plugin.ts`), `any`,

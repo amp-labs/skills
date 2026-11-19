@@ -1,0 +1,8 @@
+$ node scripts/compare-results.ts test/fixtures/results test/fixtures/main-results added-scenario
+exit code: 0
+stdout:
+| Arm | main | branch | p | Verdict | Not compared |
+| --- | --- | --- | --- | --- | --- |
+| added-scenario | 9/9 | 9/9 | 1.000 | ok | 1 on this branch |
+
+stderr:

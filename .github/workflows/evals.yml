@@ -18,161 +18,20 @@ permissions:
   contents: read
 
 jobs:
-  plan:
-    name: plan evals
+  evals:
+    name: run evals
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.label.name == 'run-evals' &&
       github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
-    outputs:
-      runs: ${{ steps.plan.outputs.runs }}
-      branch_arms: ${{ steps.plan.outputs.branch_arms }}
-      main_arms: ${{ steps.plan.outputs.main_arms }}
-      main_sha: ${{ steps.plan.outputs.main_sha }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/checkout@v4
-        if: github.event_name == 'pull_request'
-        with:
-          ref: main
-          path: main-branch
-
-      - id: plan
-        env:
-          ARMS: ${{ inputs.arms || 'all' }}
-        run: |
-          arms_in() { for f in "$1"/evals/experiments/*.ts; do basename "$f" .ts; done | tr '\n' ' '; }
-          if [ "$ARMS" = all ]; then ARMS=$(arms_in .); fi
-          read -ra branch_arms <<< "$ARMS"
-          if [ ${#branch_arms[@]} -eq 0 ]; then echo "::error::Name at least one arm, or all"; exit 1; fi
-          main_arms=()
-          main_sha=
-          if [ -d main-branch ]; then
-            main_sha=$(git -C main-branch rev-parse HEAD)
-            read -ra main_arms <<< "$(arms_in main-branch)"
-          fi
-          runs=$(jq -cn --args '[$ARGS.positional[] | capture("^(?<side>[^:]+):(?<arm>.+)$")]' \
-            "${branch_arms[@]/#/branch:}" "${main_arms[@]/#/main:}")
-          {
-            echo "runs=$runs"
-            echo "branch_arms=${branch_arms[*]}"
-            echo "main_arms=${main_arms[*]}"
-            echo "main_sha=$main_sha"
-          } >> "$GITHUB_OUTPUT"
-
-  run:
-    name: run-evals (${{ matrix.side }}, ${{ matrix.arm }})
-    needs: plan
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    environment: evals
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.plan.outputs.runs) }}
-    env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      AMP_API_KEY: ${{ secrets.AMP_API_KEY }}
-      AMP_EVAL_PROJECT: ${{ secrets.AMP_EVAL_PROJECT }}
-      EVAL_EFFORT: ${{ inputs.effort || 'medium' }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.side == 'main' && needs.plan.outputs.main_sha || '' }}
-
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version: "24"
-          working-directory: evals
-
-      - name: Check the eval project is set
-        run: |
-          if [ -z "$AMP_EVAL_PROJECT" ]; then
-            echo "::error::AMP_EVAL_PROJECT is empty. Set it in the evals environment."
-            exit 1
-          fi
-
-      - name: Run the arm
-        working-directory: evals
-        env:
-          ARM: ${{ matrix.arm }}
-        run: npm run eval -- "$ARM" || true
-
-      - name: Pack pass counts
-        if: always()
-        working-directory: evals
-        run: find results -name summary.json -print0 | tar czf "$RUNNER_TEMP/summaries.tgz" --null -T -
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: summaries-${{ matrix.side }}-${{ matrix.arm }}
-          path: ${{ runner.temp }}/summaries.tgz
-          retention-days: 7
-          overwrite: true
-
-      - name: Fail if this arm produced no results
-        working-directory: evals
-        env:
-          ARM: ${{ matrix.arm }}
-        run: node scripts/summarize-results.ts results "$ARM" >> "$GITHUB_STEP_SUMMARY"
-
-  report:
-    name: eval report
-    needs: [plan, run]
-    if: always() && needs.plan.result == 'success'
-    runs-on: ubuntu-latest
+    concurrency:
+      group: evals
     permissions:
       contents: read
       pull-requests: write
-    env:
-      EVAL_EFFORT: ${{ inputs.effort || 'medium' }}
-      BRANCH_ARMS: ${{ needs.plan.outputs.branch_arms }}
-      MAIN_ARMS: ${{ needs.plan.outputs.main_arms }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/checkout@v4
-        if: github.event_name == 'pull_request'
-        with:
-          ref: ${{ needs.plan.outputs.main_sha }}
-          path: main-branch
-
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version: "24"
-          working-directory: evals
-
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: summaries-*
-          path: ${{ runner.temp }}/summaries
-
-      - name: Summarize
-        run: |
-          shopt -s nullglob
-          for archive in "$RUNNER_TEMP"/summaries/summaries-branch-*/summaries.tgz; do tar xzf "$archive" -C evals; done
-          read -ra branch_arms <<< "$BRANCH_ARMS"
-          echo "### This branch" > summary.md
-          (cd evals && node scripts/summarize-results.ts results "${branch_arms[@]}") >> summary.md || echo "MISSING_RESULTS=1" >> "$GITHUB_ENV"
-          if [ -n "$MAIN_ARMS" ]; then
-            (cd main-branch/evals && npm ci --silent)
-            for archive in "$RUNNER_TEMP"/summaries/summaries-main-*/summaries.tgz; do tar xzf "$archive" -C main-branch/evals; done
-            read -ra main_arms <<< "$MAIN_ARMS"
-            printf '\n### main\n' >> summary.md
-            (cd main-branch/evals && node scripts/summarize-results.ts results "${main_arms[@]}") >> summary.md || echo "MISSING_RESULTS=1" >> "$GITHUB_ENV"
-          fi
-          cat summary.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Comment on the pull request
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
-        run: gh pr comment "$PR" --body-file summary.md
-
-      - name: Fail if an arm produced no results
-        run: test -z "$MISSING_RESULTS"
+    uses: ./.github/workflows/run-evals.yml
+    secrets: inherit
+    with:
+      arms: ${{ inputs.arms || 'all' }}
+      effort: ${{ inputs.effort || 'medium' }}
+      report: evals
