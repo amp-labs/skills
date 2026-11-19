@@ -56,6 +56,7 @@ jobs:
       contents: read
       pull-requests: write
     uses: ./.github/workflows/run-evals.yml
+    secrets: inherit
     with:
       arms: ${{ needs.changes.outputs.arms }}
 

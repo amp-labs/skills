@@ -30,6 +30,7 @@ jobs:
       contents: read
       pull-requests: write
     uses: ./.github/workflows/run-evals.yml
+    secrets: inherit
     with:
       arms: ${{ inputs.arms || 'all' }}
       effort: ${{ inputs.effort || 'medium' }}
