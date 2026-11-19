@@ -27,7 +27,7 @@ jobs:
           DRAFT: ${{ github.event.pull_request.draft }}
           FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
-          changed=$(git diff --name-only origin/main...HEAD)
+          changed=$(git diff --no-renames --name-only origin/main...HEAD)
           arms=()
           if grep -qE '^evals/(lib|experiments|evals)/|^evals/package(-lock)?\.json$' <<< "$changed"; then
             arms=(all)
@@ -59,6 +59,7 @@ jobs:
     secrets: inherit
     with:
       arms: ${{ needs.changes.outputs.arms }}
+      report: eval-gate
 
   gate:
     name: eval-gate
