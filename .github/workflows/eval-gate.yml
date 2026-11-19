@@ -49,6 +49,7 @@ jobs:
           echo "arms=${arms[*]}" >> "$GITHUB_OUTPUT"
 
   evals:
+    name: compare with main
     needs: changes
     if: needs.changes.outputs.arms != ''
     permissions:

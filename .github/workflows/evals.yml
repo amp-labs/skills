@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   evals:
+    name: run evals
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.label.name == 'run-evals' &&
