@@ -80,9 +80,14 @@ transcript credits to a run, and the pass-rate table. When behavior changes on p
 Maintainers can run the evals on GitHub with the keys in the `evals` environment. Results appear as a pass-rate
 table; transcripts stay out of CI because the repository is public.
 
-- Run the `evals` workflow from the Actions tab, with the arms to run or `all`.
+- Run the `evals` workflow from the Actions tab, with the arms to run or `all`, and the reasoning effort.
 - Add the `run-evals` label to a pull request from this repository. It runs every arm on the branch and on `main`,
   and comments both tables. Remove and add the label again to rerun.
+
+Each arm runs in its own job, so a full run takes about as long as its slowest arm. Every baseline arm and the
+report use the one `main` commit the run started from. An arm whose results are incomplete fails its own job, so
+**Re-run failed jobs** runs that arm again and rebuilds the report from the other arms' summaries. Summaries are
+kept for seven days, so a later rerun needs **Re-run all jobs**.
 
 ## Checks
 
