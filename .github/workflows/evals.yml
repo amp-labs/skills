@@ -82,7 +82,7 @@ jobs:
           if [ -n "$MAIN_ARMS_RUN" ]; then
             read -ra main_arms <<< "$MAIN_ARMS_RUN"
             printf '\n### main\n' >> summary.md
-            node scripts/summarize-results.ts ../main-branch/evals/results "${main_arms[@]}" >> summary.md || echo "MISSING_RESULTS=1" >> "$GITHUB_ENV"
+            node ../main-branch/evals/scripts/summarize-results.ts ../main-branch/evals/results "${main_arms[@]}" >> summary.md || echo "MISSING_RESULTS=1" >> "$GITHUB_ENV"
           fi
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
 
