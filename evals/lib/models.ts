@@ -5,7 +5,18 @@ export const modelsByAgent = {
 
 export type Agent = keyof typeof modelsByAgent;
 
-export type Effort = "low" | "medium";
+const efforts = ["low", "medium", "high"] as const;
+
+type Effort = (typeof efforts)[number];
+
+const isEffort = (value: string): value is Effort => efforts.some((effort) => effort === value);
+
+export function effortFromEnvironment(): Effort {
+  const requested = process.env.EVAL_EFFORT || "medium";
+  if (!isEffort(requested))
+    throw new Error(`EVAL_EFFORT must be one of ${efforts.join(", ")}, not "${requested}"`);
+  return requested;
+}
 
 export const projectSkillsDirByAgent: Record<Agent, string> = {
   "claude-code": ".claude/skills",

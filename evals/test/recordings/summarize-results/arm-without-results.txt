@@ -1,11 +1,11 @@
-$ node scripts/summarize-results.ts test/fixtures/results claude-amp-cli-low claude-no-skills-low
+$ node scripts/summarize-results.ts test/fixtures/results claude-amp-cli codex-no-skills
 exit code: 1
 stdout:
 | Scenario | Arm | Model | Passed |
 | --- | --- | --- | --- |
-| deploy-integration | claude-amp-cli-low | claude-haiku-5-5 | 2/3 |
-| deploy-integration | claude-amp-cli-low | claude-opus-5-5 | 3/3 |
-| deploy-integration | claude-amp-cli-low | claude-sonnet-5-5 | 3/3 |
-|  | claude-no-skills-low |  | no results |
+| deploy-integration | claude-amp-cli | claude-haiku-5-5 | 2/3 |
+| deploy-integration | claude-amp-cli | claude-opus-5-5 | 3/3 |
+| deploy-integration | claude-amp-cli | claude-sonnet-5-5 | 3/3 |
+|  | codex-no-skills |  | no results |
 
 stderr:

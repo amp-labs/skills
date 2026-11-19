@@ -6,6 +6,11 @@ on:
       arms:
         description: Arms to run, separated by spaces, or "all"
         default: all
+      effort:
+        description: Reasoning effort for every arm
+        type: choice
+        options: [medium, low, high]
+        default: medium
   pull_request:
     types: [labeled]
 
@@ -31,6 +36,7 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       AMP_API_KEY: ${{ secrets.AMP_API_KEY }}
       AMP_EVAL_PROJECT: ${{ vars.AMP_EVAL_PROJECT }}
+      EVAL_EFFORT: ${{ inputs.effort || 'medium' }}
     steps:
       - uses: actions/checkout@v4
 
