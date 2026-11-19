@@ -61,6 +61,15 @@ directory that holds `linux_arm64/amp` and `linux_amd64/amp`.
 
 Arms are in `experiments/`, and the models they run on are in `lib/models.ts`.
 
+## Run in CI
+
+Maintainers can run the evals on GitHub with the keys in the `evals` environment. Results appear as a pass-rate
+table; transcripts stay out of CI because the repository is public.
+
+- Run the `evals` workflow from the Actions tab, with the arms to run or `all`.
+- Add the `run-evals` label to a pull request from this repository. It runs every arm on the branch and on `main`,
+  and comments both tables. Remove and add the label again to rerun.
+
 ## Checks
 
 `npm run check` formats, lints, and type-checks this folder. Lint rules forbid comments (`lint-plugin.ts`), `any`,

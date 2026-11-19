@@ -6,23 +6,39 @@ on:
       arms:
         description: Arms to run, separated by spaces, or "all"
         default: all
+  pull_request:
+    types: [labeled]
 
 permissions:
   contents: read
 
-concurrency:
-  group: evals
-
 jobs:
   evals:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.label.name == 'run-evals' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 240
+    concurrency:
+      group: evals
     environment: evals
-    defaults:
-      run:
-        working-directory: evals
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      AMP_API_KEY: ${{ secrets.AMP_API_KEY }}
+      AMP_EVAL_PROJECT: ${{ vars.AMP_EVAL_PROJECT }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          ref: main
+          path: main-branch
 
       - uses: voidzero-dev/setup-vp@v1.22.0
         with:
@@ -30,12 +46,9 @@ jobs:
           working-directory: evals
 
       - name: Run arms one at a time
+        working-directory: evals
         env:
-          ARMS: ${{ inputs.arms }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AMP_API_KEY: ${{ secrets.AMP_API_KEY }}
-          AMP_EVAL_PROJECT: ${{ vars.AMP_EVAL_PROJECT }}
+          ARMS: ${{ inputs.arms || 'all' }}
         run: |
           if [ "$ARMS" = all ]; then ARMS=$(for f in experiments/*.ts; do basename "$f" .ts; done | tr '\n' ' '); fi
           echo "ARMS_RUN=$ARMS" >> "$GITHUB_ENV"
@@ -43,8 +56,38 @@ jobs:
           if [ ${#arms[@]} -eq 0 ]; then echo "::error::Name at least one arm, or all"; exit 1; fi
           for arm in "${arms[@]}"; do npm run eval -- "$arm" || true; done
 
+      - name: Run arms on main one at a time
+        if: github.event_name == 'pull_request'
+        working-directory: main-branch/evals
+        run: |
+          npm ci
+          ARMS=$(for f in experiments/*.ts; do basename "$f" .ts; done | tr '\n' ' ')
+          echo "MAIN_ARMS_RUN=$ARMS" >> "$GITHUB_ENV"
+          read -ra arms <<< "$ARMS"
+          for arm in "${arms[@]}"; do npm run eval -- "$arm" || true; done
+
       - name: Summarize
         if: always()
+        working-directory: evals
         run: |
           read -ra arms <<< "$ARMS_RUN"
-          node scripts/summarize-results.ts results "${arms[@]}" >> "$GITHUB_STEP_SUMMARY"
+          echo "### This branch" > summary.md
+          node scripts/summarize-results.ts results "${arms[@]}" >> summary.md || echo "MISSING_RESULTS=1" >> "$GITHUB_ENV"
+          if [ -n "$MAIN_ARMS_RUN" ]; then
+            read -ra main_arms <<< "$MAIN_ARMS_RUN"
+            printf '\n### main\n' >> summary.md
+            node scripts/summarize-results.ts ../main-branch/evals/results "${main_arms[@]}" >> summary.md || echo "MISSING_RESULTS=1" >> "$GITHUB_ENV"
+          fi
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the pull request
+        if: always() && github.event_name == 'pull_request'
+        working-directory: evals
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh pr comment "$PR" --body-file summary.md
+
+      - name: Fail if an arm produced no results
+        if: always()
+        run: test -z "$MISSING_RESULTS"
