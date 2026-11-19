@@ -86,7 +86,8 @@ table; transcripts stay out of CI because the repository is public.
 
 Each arm runs in its own job, so a full run takes about as long as its slowest arm. Every baseline arm and the
 report use the one `main` commit the run started from. An arm whose results are incomplete fails its own job, so
-**Re-run failed jobs** runs that arm again.
+**Re-run failed jobs** runs that arm again and rebuilds the report from the other arms' summaries. Summaries are
+kept for seven days, so a later rerun needs **Re-run all jobs**.
 
 ## Checks
 
