@@ -7,6 +7,7 @@ const evalsDir = fileURLToPath(new URL("../", import.meta.url));
 const cases: Record<string, string[]> = {
   "latest-run-per-model": ["test/fixtures/results", "claude-amp-cli-low", "codex-amp-cli-low"],
   "arm-without-results": ["test/fixtures/results", "claude-amp-cli-low", "claude-no-skills-low"],
+  "model-without-results": ["test/fixtures/results", "claude-amp-cli-medium"],
 };
 
 test.each(Object.keys(cases))("%s", async (name) => {

@@ -5,6 +5,7 @@ stdout:
 | --- | --- | --- | --- |
 | deploy-integration | claude-amp-cli-low | claude-haiku-5-5 | 2/3 |
 | deploy-integration | claude-amp-cli-low | claude-opus-5-5 | 3/3 |
-| | claude-no-skills-low | | no results |
+| deploy-integration | claude-amp-cli-low | claude-sonnet-5-5 | 3/3 |
+|  | claude-no-skills-low |  | no results |
 
 stderr:
